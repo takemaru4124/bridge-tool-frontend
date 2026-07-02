@@ -67,7 +67,7 @@ const SUPABASE_URL = "https://plopsosvifjlozsjneqf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_l8ZNZi8hR2PLCs8elZXSYg_Q87eWL2w";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const API = "/api";
+const API = "https://bridge-tool-api.onrender.com";
 
 // 旧9系evalキー(s{径間}__p{頁})を新キー(s{径間}__{sheet}__p{頁})へ複製する移行。
 // 旧キーはシート未区別のため9-1/9-2/10へ複製（既存値を失わない・冪等）。
