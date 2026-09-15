@@ -320,6 +320,7 @@ export default function BridgeInspectionTool() {
   const [situationPhotos, setSituationPhotos] = useState([]);
   const [situationPhotosSource, setSituationPhotosSource] = useState([]);
   const [inspectionItems, setInspectionItems] = useState([]);
+  const [buzaiNoMode, setBuzaiNoMode] = useState(false);  // 出力トグル: true=部材番号 / false=要素番号(従来)
   const [inspectionEvals, setInspectionEvals] = useState({});
   const [nonPhotos, setNonPhotos] = useState([]);
   const [inspectionForm, setInspectionForm] = useState({});
@@ -734,7 +735,7 @@ export default function BridgeInspectionTool() {
         return { ...n, photoFile: photosBase64[n.photoFile] ? n.photoFile : "" };
       });
 
-      const exportData = { ...bridgeData, damages_data: resolvedDamages, non_photos: resolvedNonPhotos, photos_base64: photosBase64, memo_templates: memoTemplates, inspection_form: inspectionForm };
+      const exportData = { ...bridgeData, damages_data: resolvedDamages, non_photos: resolvedNonPhotos, photos_base64: photosBase64, memo_templates: memoTemplates, inspection_form: inspectionForm, buzai_mode: buzaiNoMode };
       const res = await fetch(`${API}/export-from-data`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -850,7 +851,7 @@ export default function BridgeInspectionTool() {
         inspection_evals: inspectionEvals,
       non_photos: nonPhotos,
       inspection_form: inspectionForm,
-        photos_base64: photosBase64 };
+        photos_base64: photosBase64, buzai_mode: buzaiNoMode };
       const res = await fetch(`${API}/export-inspection-format`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1372,6 +1373,15 @@ export default function BridgeInspectionTool() {
                     </div>
                   )}
 
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0 10px", fontSize: 14, fontWeight: 600, color: "#334155" }}>
+                    <input
+                      type="checkbox"
+                      checked={buzaiNoMode}
+                      onChange={(e) => setBuzaiNoMode(e.target.checked)}
+                      style={{ width: 16, height: 16 }}
+                    />
+                    部材番号で出力する（チェックなし＝要素番号／データ記録様式・点検記録様式・採番済DXF 共通）
+                  </label>
                   <button
                     style={{ ...styles.exportBtn, background: "#7c3aed" }}
                     onClick={handleExportChosho}
@@ -1405,6 +1415,7 @@ export default function BridgeInspectionTool() {
                         damagesData: damagesData || [],
                         numberingLabel,
                         renderData: dxfData.render_data,
+                        buzaiMode: buzaiNoMode,
                       })}
                     >
                        採番済DXFを出力
