@@ -1216,6 +1216,7 @@ export default function BridgeInspectionTool() {
                     sourcePhotos={situationPhotosSource}
                     photos={photos}
                     numberingLabel={numberingLabel}
+                    spanCount={Math.max(parseInt(bridgeData?.径間数) || 0, (dxfData?.dxf_spans?.length) || 0, ...(situationPhotos || []).map(sp => sp.spanNo || 0), 1)}
                     onUpdate={(updated) => setSituationPhotos(updated)}
                     onImportExcel={handleImportSituationExcel}
                     onSave={async () => await handleSaveAll({ situation_photos: situationPhotos })}
