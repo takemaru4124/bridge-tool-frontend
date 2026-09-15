@@ -751,7 +751,7 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
 
   const handleCopySpan1 = () => {
     if (copyTargets.length === 0) { setShowCopyModal(false); return; }
-    const src = memberDataBySpan[spans[0]] || {};
+    const src = memberDataBySpan[activeSpan] || {};
     setMemberDataBySpan(prev => {
       const next = { ...prev };
       copyTargets.forEach(sp => { next[sp] = cloneSpanData(src); });
@@ -817,7 +817,7 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
             style={{ padding: "6px 12px", fontSize: 12, fontWeight: 600, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, cursor: "pointer" }}
             onClick={openCopyModal}
           >
-            径間{spans[0]}を選択径間へコピー
+            径間{activeSpan}を選択径間へコピー
           </button>
         </div>
       )}
@@ -875,12 +875,12 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
       {showCopyModal && (
         <div style={s.overlay}>
           <div style={s.modal}>
-            <h3 style={{ marginTop: 0, fontSize: 15, color: "#1e3a5f" }}>径間{spans[0]}を他径間へコピー</h3>
+            <h3 style={{ marginTop: 0, fontSize: 15, color: "#1e3a5f" }}>径間{activeSpan}を他径間へコピー</h3>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>
               コピー先の径間を選択してください（選択した径間は上書きされます）。
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-              {spans.filter(sp => sp !== spans[0]).map(sp => (
+              {spans.filter(sp => sp !== activeSpan).map(sp => (
                 <label key={sp} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 6, cursor: "pointer" }}>
                   <input
                     type="checkbox"
@@ -895,11 +895,11 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
               <button
                 style={{ fontSize: 12, color: "#2563eb", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 onClick={() => {
-                  const others = spans.filter(sp => sp !== spans[0]);
+                  const others = spans.filter(sp => sp !== activeSpan);
                   setCopyTargets(copyTargets.length === others.length ? [] : others);
                 }}
               >
-                {copyTargets.length === spans.filter(sp => sp !== spans[0]).length ? "全解除" : "全選択"}
+                {copyTargets.length === spans.filter(sp => sp !== activeSpan).length ? "全解除" : "全選択"}
               </button>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
