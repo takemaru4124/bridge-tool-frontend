@@ -1,13 +1,16 @@
 import { useState, useRef } from "react";
 
-export default function SituationPhotos({ situationPhotos, sourcePhotos, photos, numberingLabel, onUpdate, onImportExcel, onSave }) {
+export default function SituationPhotos({ situationPhotos, sourcePhotos, photos, numberingLabel, spanCount, onUpdate, onImportExcel, onSave }) {
   const [activeSpan, setActiveSpan] = useState(null);
   const [dragFrom, setDragFrom] = useState(null);
   const fileRef = useRef(null);
 
   const label = numberingLabel || "写真";
 
-  const spans = [...new Set((situationPhotos || []).map(sp => sp.spanNo))].sort((a, b) => a - b);
+  // 全径間タブを常時表示（径間数と既存写真の径間の和集合＝1..N）
+  const photoSpans = (situationPhotos || []).map(sp => sp.spanNo || 0);
+  const totalSpans = Math.max(spanCount || 0, ...photoSpans, 1);
+  const spans = Array.from({ length: totalSpans }, (_, i) => i + 1);
   const currentSpan = activeSpan !== null && spans.includes(activeSpan) ? activeSpan : (spans[0] ?? null);
   const filtered = (situationPhotos || []).filter(sp => sp.spanNo === currentSpan);
 
