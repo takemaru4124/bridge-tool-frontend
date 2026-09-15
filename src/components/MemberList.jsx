@@ -545,6 +545,8 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
     return keys.length > 0 ? keys[0] : 1;
   });
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyTargets, setCopyTargets] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -728,6 +730,36 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
     }
   };
 
+  // 部材データを独立複製（Set/配列は新規生成し径間間の参照共有を防ぐ）
+  const cloneSpanData = (spanData) => {
+    const out = {};
+    for (const [code, d] of Object.entries(spanData || {})) {
+      out[code] = {
+        ...d,
+        elements: [...(d.elements || [])],
+        manualElements: new Set(d.manualElements || []),
+        deletedElements: d.deletedElements ? new Set(d.deletedElements) : new Set(),
+      };
+    }
+    return out;
+  };
+
+  const openCopyModal = () => {
+    setCopyTargets([]);
+    setShowCopyModal(true);
+  };
+
+  const handleCopySpan1 = () => {
+    if (copyTargets.length === 0) { setShowCopyModal(false); return; }
+    const src = memberDataBySpan[spans[0]] || {};
+    setMemberDataBySpan(prev => {
+      const next = { ...prev };
+      copyTargets.forEach(sp => { next[sp] = cloneSpanData(src); });
+      return next;
+    });
+    setShowCopyModal(false);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -778,6 +810,18 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
         </div>
       )}
 
+      {/* 1径間目コピー */}
+      {spans.length > 1 && (
+        <div style={{ marginBottom: 10 }}>
+          <button
+            style={{ padding: "6px 12px", fontSize: 12, fontWeight: 600, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, cursor: "pointer" }}
+            onClick={openCopyModal}
+          >
+            径間{spans[0]}を選択径間へコピー
+          </button>
+        </div>
+      )}
+
       {/* 視点タグ */}
       {dxfSpan?.views && dxfSpan.views.length > 0 && (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0" }}>
@@ -825,6 +869,45 @@ export default function MemberList({ membersBySpan, dxfElementNumbers, dxfSpans,
           onAdd={handleAddMember}
           onClose={() => setShowAddModal(false)}
         />
+      )}
+
+      {/* 径間コピー先選択モーダル */}
+      {showCopyModal && (
+        <div style={s.overlay}>
+          <div style={s.modal}>
+            <h3 style={{ marginTop: 0, fontSize: 15, color: "#1e3a5f" }}>径間{spans[0]}を他径間へコピー</h3>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>
+              コピー先の径間を選択してください（選択した径間は上書きされます）。
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+              {spans.filter(sp => sp !== spans[0]).map(sp => (
+                <label key={sp} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 6, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={copyTargets.includes(sp)}
+                    onChange={e => setCopyTargets(prev => e.target.checked ? [...prev, sp] : prev.filter(x => x !== sp))}
+                  />
+                  径間{sp}
+                </label>
+              ))}
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <button
+                style={{ fontSize: 12, color: "#2563eb", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                onClick={() => {
+                  const others = spans.filter(sp => sp !== spans[0]);
+                  setCopyTargets(copyTargets.length === others.length ? [] : others);
+                }}
+              >
+                {copyTargets.length === spans.filter(sp => sp !== spans[0]).length ? "全解除" : "全選択"}
+              </button>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+              <button style={s.cancelBtn} onClick={() => setShowCopyModal(false)}>キャンセル</button>
+              <button style={s.confirmBtn} onClick={handleCopySpan1} disabled={copyTargets.length === 0}>コピー</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
